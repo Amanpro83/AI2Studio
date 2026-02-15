@@ -32,6 +32,15 @@ export function registerAI2Blocks() {
           .appendField(new Blockly.FieldNumber(1, 1, 1000, 1), "VERSION")
           .appendField("Author:")
           .appendField(new Blockly.FieldTextInput("Your Name"), "AUTHOR");
+        this.appendDummyInput()
+          .appendField("Help URL:")
+          .appendField(new Blockly.FieldTextInput(""), "HELP_URL");
+        this.appendDummyInput()
+          .appendField("Libraries (comma sep):")
+          .appendField(new Blockly.FieldTextInput(""), "LIBRARIES");
+        this.appendDummyInput()
+          .appendField("Extra Imports (comma sep):")
+          .appendField(new Blockly.FieldTextInput(""), "IMPORTS");
         this.appendStatementInput("PROPERTIES")
           .setCheck(null)
           .appendField("Properties");
@@ -49,7 +58,7 @@ export function registerAI2Blocks() {
           "https://ai2.appinventor.mit.edu/reference/components/extensions.html",
         );
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Property block
@@ -65,6 +74,8 @@ export function registerAI2Blocks() {
               ["int", "int"],
               ["boolean", "boolean"],
               ["float", "float"],
+              ["Object", "Object"],
+              ["List", "List"],
             ]),
             "TYPE",
           )
@@ -81,7 +92,7 @@ export function registerAI2Blocks() {
         this.setTooltip("Defines a property with optional getter/setter");
         this.setHelpUrl("");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Method block
@@ -98,6 +109,8 @@ export function registerAI2Blocks() {
               ["int", "int"],
               ["boolean", "boolean"],
               ["float", "float"],
+              ["Object", "Object"],
+              ["List", "List"],
             ]),
             "RET",
           )
@@ -113,7 +126,7 @@ export function registerAI2Blocks() {
         this.setTooltip("Defines a SimpleFunction");
         this.setHelpUrl("");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Event block
@@ -133,7 +146,7 @@ export function registerAI2Blocks() {
         this.setTooltip("Defines a SimpleEvent");
         this.setHelpUrl("");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Set a property or variable (AI2 style)
@@ -152,7 +165,7 @@ export function registerAI2Blocks() {
         "https://ai2.appinventor.mit.edu/reference/components/extensions.html",
       );
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Return statement (AI2)
   Blockly.Blocks["ai2_return"] = {
@@ -163,7 +176,7 @@ export function registerAI2Blocks() {
       this.setTooltip("Return a value from a method");
       this.setHelpUrl("");
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Dispatch event (AI2)
   Blockly.Blocks["ai2_dispatch"] = {
@@ -181,7 +194,7 @@ export function registerAI2Blocks() {
       this.setTooltip("Dispatch an event defined in this extension");
       this.setHelpUrl("");
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Convenience lists helper (if not present)
   if (!Blockly.Blocks["lists_create_with"]) {
@@ -192,7 +205,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Create a list with items");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["lists_length"]) {
@@ -205,7 +218,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Length of a list");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["lists_getIndex"]) {
@@ -219,7 +232,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Get item from list by index (0-based)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Provide a safe, simple controls_repeat block to avoid message token validation issues
@@ -234,7 +247,7 @@ export function registerAI2Blocks() {
       this.setTooltip("Repeat n times");
       this.setHelpUrl("");
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Provide a safe controls_for block to avoid message token validation issues
   Blockly.Blocks["controls_for"] = {
@@ -253,7 +266,7 @@ export function registerAI2Blocks() {
       this.setTooltip("Count with variable from start to end by step");
       this.setHelpUrl("");
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Provide a safe controls_whileUntil block to avoid message token validation issues
   Blockly.Blocks["controls_whileUntil"] = {
@@ -275,7 +288,7 @@ export function registerAI2Blocks() {
       this.setTooltip("Repeat while/until condition");
       this.setHelpUrl("");
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Provide a safe math_change block to avoid message token and args/message mismatches
   if (!Blockly.Blocks["math_change"]) {
@@ -292,7 +305,7 @@ export function registerAI2Blocks() {
         this.setTooltip("Change the value of a variable by the given amount.");
         this.setHelpUrl("");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Provide a safe controls_forEach block (override core if present)
@@ -309,7 +322,7 @@ export function registerAI2Blocks() {
       this.setTooltip("Iterate over each item in a list");
       this.setHelpUrl("");
     },
-  } as Blockly.BlockDefinition;
+  } as any;
 
   // Fallback colour picker blocks if not defined by core
   if (!Blockly.Blocks["colour_picker"]) {
@@ -323,7 +336,7 @@ export function registerAI2Blocks() {
         this.setColour(20);
         this.setTooltip("Pick a colour (hex)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
   if (!Blockly.Blocks["colour_random"]) {
     Blockly.Blocks["colour_random"] = {
@@ -333,7 +346,7 @@ export function registerAI2Blocks() {
         this.setColour(20);
         this.setTooltip("Get a random colour (hex)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
   if (!Blockly.Blocks["colour_rgb"]) {
     Blockly.Blocks["colour_rgb"] = {
@@ -347,7 +360,7 @@ export function registerAI2Blocks() {
           "Create a colour from red, green and blue components (0-255)",
         );
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Extra handy text helpers
@@ -360,7 +373,7 @@ export function registerAI2Blocks() {
         this.setColour(160);
         this.setTooltip("Return true if text contains the search string");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["text_startswith"]) {
@@ -372,7 +385,7 @@ export function registerAI2Blocks() {
         this.setColour(160);
         this.setTooltip("Return true if text starts with the search string");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["text_endswith"]) {
@@ -384,7 +397,7 @@ export function registerAI2Blocks() {
         this.setColour(160);
         this.setTooltip("Return true if text ends with the search string");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // List helpers
@@ -398,7 +411,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Append item to a list (modifies the list)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["lists_remove_at"]) {
@@ -411,7 +424,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Remove item at index from list");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["lists_index_of"]) {
@@ -423,7 +436,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Return index of item in list or -1 if not found");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Maps (dictionaries)
@@ -435,7 +448,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Create a new map/dictionary");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["map_put"]) {
@@ -449,7 +462,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Put key/value into map");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["map_get"]) {
@@ -461,7 +474,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Get value from map by key (or null)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Trigonometry helper (fallback)
@@ -481,7 +494,7 @@ export function registerAI2Blocks() {
         this.setColour(230);
         this.setTooltip("Basic trigonometry and conversions");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Advanced: HTTP, JSON, threading, timers and file helpers
@@ -496,7 +509,7 @@ export function registerAI2Blocks() {
         this.setColour(20);
         this.setTooltip("Perform an HTTP GET request in background and run handlers");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["json_parse"]) {
@@ -507,7 +520,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Parse JSON string into an object");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["json_get"]) {
@@ -519,7 +532,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Get value from JSON object by key");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["thread_run"]) {
@@ -531,7 +544,7 @@ export function registerAI2Blocks() {
         this.setColour(330);
         this.setTooltip("Run statements in a background thread");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["timer_delay"]) {
@@ -544,7 +557,7 @@ export function registerAI2Blocks() {
         this.setColour(330);
         this.setTooltip("Run statements after a delay (non-blocking)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["file_write"]) {
@@ -557,7 +570,7 @@ export function registerAI2Blocks() {
         this.setColour(200);
         this.setTooltip("Write string content to a file path (internal storage)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["file_read"]) {
@@ -568,7 +581,7 @@ export function registerAI2Blocks() {
         this.setColour(200);
         this.setTooltip("Read file content (returns string) or null");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["base64_encode"]) {
@@ -579,7 +592,7 @@ export function registerAI2Blocks() {
         this.setColour(40);
         this.setTooltip("Encode text to Base64");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["base64_decode"]) {
@@ -590,7 +603,7 @@ export function registerAI2Blocks() {
         this.setColour(40);
         this.setTooltip("Decode Base64 to text");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // End advanced blocks
@@ -603,7 +616,7 @@ export function registerAI2Blocks() {
         this.setColour(160);
         this.setTooltip("Return true if text contains the search string");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["text_startswith"]) {
@@ -615,7 +628,7 @@ export function registerAI2Blocks() {
         this.setColour(160);
         this.setTooltip("Return true if text starts with the search string");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["text_endswith"]) {
@@ -627,7 +640,7 @@ export function registerAI2Blocks() {
         this.setColour(160);
         this.setTooltip("Return true if text ends with the search string");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // List helpers
@@ -641,7 +654,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Append item to a list (modifies the list)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["lists_remove_at"]) {
@@ -654,7 +667,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Remove item at index from list");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["lists_index_of"]) {
@@ -666,7 +679,7 @@ export function registerAI2Blocks() {
         this.setColour(260);
         this.setTooltip("Return index of item in list or -1 if not found");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Maps (dictionaries)
@@ -678,7 +691,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Create a new map/dictionary");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["map_put"]) {
@@ -692,7 +705,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Put key/value into map");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   if (!Blockly.Blocks["map_get"]) {
@@ -704,7 +717,7 @@ export function registerAI2Blocks() {
         this.setColour(290);
         this.setTooltip("Get value from map by key (or null)");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
   }
 
   // Trigonometry helper (fallback)
@@ -724,6 +737,386 @@ export function registerAI2Blocks() {
         this.setColour(230);
         this.setTooltip("Basic trigonometry and conversions");
       },
-    } as Blockly.BlockDefinition;
+    } as any;
+  }
+  // Date & Time
+  if (!Blockly.Blocks["date_current_millis"]) {
+    Blockly.Blocks["date_current_millis"] = {
+      init() {
+        this.appendDummyInput().appendField("Date: Current Millis");
+        this.setOutput(true, "Number");
+        this.setColour(190);
+        this.setTooltip("Get current time in milliseconds");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["date_format"]) {
+    Blockly.Blocks["date_format"] = {
+      init() {
+        this.appendValueInput("MILLIS").setCheck("Number").appendField("Date: Format");
+        this.appendValueInput("PATTERN").setCheck("String").appendField("Pattern");
+        this.setOutput(true, "String");
+        this.setColour(190);
+        this.setTooltip("Format milliseconds to date string (e.g. pattern 'yyyy-MM-dd HH:mm:ss')");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["date_parse"]) {
+    Blockly.Blocks["date_parse"] = {
+      init() {
+        this.appendValueInput("DATE").setCheck("String").appendField("Date: Parse");
+        this.appendValueInput("PATTERN").setCheck("String").appendField("Pattern");
+        this.setOutput(true, "Number");
+        this.setColour(190);
+        this.setTooltip("Parse date string to milliseconds");
+      },
+    } as any;
+  }
+
+  // Device Info
+  if (!Blockly.Blocks["device_info"]) {
+    Blockly.Blocks["device_info"] = {
+      init() {
+        this.appendDummyInput()
+          .appendField("Device: Info")
+          .appendField(new Blockly.FieldDropdown([
+            ["Model", "MODEL"],
+            ["Manufacturer", "MANUFACTURER"],
+            ["Android Version", "ANDROID_VERSION"],
+            ["SDK Level", "SDK_LEVEL"],
+            ["Board", "BOARD"],
+            ["Brand", "BRAND"],
+            ["Device", "DEVICE"],
+            ["Product", "PRODUCT"]
+          ]), "INFO");
+        this.setOutput(true, "String");
+        this.setColour(30);
+        this.setTooltip("Get device information");
+      },
+    } as any;
+  }
+
+  // Crypto
+  if (!Blockly.Blocks["crypto_hash"]) {
+    Blockly.Blocks["crypto_hash"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck("String").appendField("Crypto: Hash");
+        this.appendDummyInput()
+          .appendField(new Blockly.FieldDropdown([
+            ["MD5", "MD5"],
+            ["SHA-1", "SHA-1"],
+            ["SHA-256", "SHA-256"],
+            ["SHA-512", "SHA-512"]
+          ]), "ALGO");
+        this.setOutput(true, "String");
+        this.setColour(290);
+        this.setTooltip("Calculate hash of text");
+      },
+    } as any;
+  }
+
+  // Regex
+  if (!Blockly.Blocks["regex_match"]) {
+    Blockly.Blocks["regex_match"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck("String").appendField("Regex: Match");
+        this.appendValueInput("PATTERN").setCheck("String").appendField("Pattern");
+        this.setOutput(true, "Boolean");
+        this.setColour(160);
+        this.setTooltip("Check if text matches regex pattern");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["regex_replace"]) {
+    Blockly.Blocks["regex_replace"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck("String").appendField("Regex: Replace");
+        this.appendValueInput("PATTERN").setCheck("String").appendField("Pattern");
+        this.appendValueInput("REPLACEMENT").setCheck("String").appendField("Replacement");
+        this.setOutput(true, "String");
+        this.setColour(160);
+        this.setTooltip("Replace all occurrences of regex pattern");
+      },
+    } as any;
+  }
+
+  // String Utils
+  if (!Blockly.Blocks["text_reverse"]) {
+    Blockly.Blocks["text_reverse"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck("String").appendField("Text: Reverse");
+        this.setOutput(true, "String");
+        this.setColour(160);
+        this.setTooltip("Reverse the text");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["text_trim"]) {
+    Blockly.Blocks["text_trim"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck("String").appendField("Text: Trim");
+        this.setOutput(true, "String");
+        this.setColour(160);
+        this.setTooltip("Remove whitespace from both ends");
+      },
+    } as any;
+  }
+
+  // Raw Java Code (Customization)
+  // Raw Java Code (Customization) - Fixed to use standard input to prevent crashes
+  if (!Blockly.Blocks["ai2_custom_code"]) {
+    Blockly.Blocks["ai2_custom_code"] = {
+      init() {
+        this.appendDummyInput()
+          .appendField("Raw Java Statement")
+          .appendField(new Blockly.FieldTextInput("System.out.println(\"test\");"), "CODE");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(0);
+        this.setTooltip("Inject a raw Java statement line.");
+      },
+    } as any;
+  }
+
+  // Raw Java Expression (Limitless Value)
+  if (!Blockly.Blocks["ai2_custom_expression"]) {
+    Blockly.Blocks["ai2_custom_expression"] = {
+      init() {
+        this.appendDummyInput()
+          .appendField("Raw Java Expression")
+          .appendField(new Blockly.FieldTextInput("1 + 1"), "CODE");
+        this.setOutput(true, null);
+        this.setColour(0);
+        this.setTooltip("Inject raw Java code that returns a value.");
+      },
+    } as any;
+  }
+
+  // Native Method Call (Limitless)
+  if (!Blockly.Blocks["native_call"]) {
+    Blockly.Blocks["native_call"] = {
+      init() {
+        this.appendValueInput("TARGET").setCheck(null).appendField("Call Native");
+        this.appendDummyInput().appendField(".").appendField(new Blockly.FieldTextInput("methodName"), "METHOD");
+        this.appendValueInput("ARGS").setCheck("Array").appendField("Args (List)");
+        this.setOutput(true, null);
+        this.setColour(290);
+        this.setTooltip("Call ANY method on ANY object. Use Create List for args.");
+      },
+    } as any;
+  }
+
+  // Native Field Get
+  if (!Blockly.Blocks["native_field_get"]) {
+    Blockly.Blocks["native_field_get"] = {
+      init() {
+        this.appendValueInput("TARGET").setCheck(null).appendField("Get Field");
+        this.appendDummyInput().appendField(".").appendField(new Blockly.FieldTextInput("fieldName"), "FIELD");
+        this.setOutput(true, null);
+        this.setColour(290);
+        this.setTooltip("Access ANY field on ANY object.");
+      },
+    } as any;
+  }
+
+  // Native Field Set
+  if (!Blockly.Blocks["native_field_set"]) {
+    Blockly.Blocks["native_field_set"] = {
+      init() {
+        this.appendValueInput("TARGET").setCheck(null).appendField("Set Field");
+        this.appendDummyInput().appendField(".").appendField(new Blockly.FieldTextInput("fieldName"), "FIELD");
+        this.appendValueInput("VALUE").setCheck(null).appendField("to");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(290);
+        this.setTooltip("Set ANY field on ANY object.");
+      },
+    } as any;
+  }
+
+  // Toast
+  if (!Blockly.Blocks["toast_show"]) {
+    Blockly.Blocks["toast_show"] = {
+      init() {
+        this.appendValueInput("MESSAGE").setCheck(null).appendField("Show Toast");
+        this.appendDummyInput().appendField("Duration").appendField(new Blockly.FieldDropdown([["Short", "0"], ["Long", "1"]]), "DURATION");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour("#F59E0B");
+        this.setTooltip("Show a toast message");
+      },
+    } as any;
+  }
+
+  // Clipboard
+  if (!Blockly.Blocks["clipboard_copy"]) {
+    Blockly.Blocks["clipboard_copy"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck(null).appendField("Copy to Clipboard");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour("#A52A2A"); // Brown/Reddish
+        this.setTooltip("Copy text to system clipboard");
+      },
+    } as any;
+  }
+
+  // Intent Open
+  if (!Blockly.Blocks["intent_open"]) {
+    Blockly.Blocks["intent_open"] = {
+      init() {
+        this.appendValueInput("URL").setCheck(null).appendField("Open URL");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour("#06B6D4");
+        this.setTooltip("Open a URL in browser");
+      },
+    } as any;
+  }
+
+  // Vibrator
+  if (!Blockly.Blocks["vibrator_vibrate"]) {
+    Blockly.Blocks["vibrator_vibrate"] = {
+      init() {
+        this.appendValueInput("MS").setCheck("Number").appendField("Vibrate (ms)");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour("#E91E63");
+        this.setTooltip("Vibrate the device");
+      },
+    } as any;
+  }
+
+  // SharedPreferences (Storage)
+  if (!Blockly.Blocks["prefs_store"]) {
+    Blockly.Blocks["prefs_store"] = {
+      init() {
+        this.appendDummyInput().appendField("Storage: Store");
+        this.appendValueInput("KEY").setCheck("String").appendField("Key");
+        this.appendValueInput("VALUE").setCheck(null).appendField("Value");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour("#795548");
+        this.setTooltip("Save value to SharedPreferences");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["prefs_get"]) {
+    Blockly.Blocks["prefs_get"] = {
+      init() {
+        this.appendDummyInput().appendField("Storage: Get");
+        this.appendValueInput("KEY").setCheck("String").appendField("Key");
+        this.appendValueInput("DEFAULT").setCheck(null).appendField("Default");
+        this.setOutput(true, null);
+        this.setColour("#795548");
+        this.setTooltip("Get value from SharedPreferences");
+      },
+    } as any;
+  }
+
+  // Network
+  if (!Blockly.Blocks["network_get"]) {
+    Blockly.Blocks["network_get"] = {
+      init() {
+        this.appendValueInput("URL").setCheck("String").appendField("Network: Get (Sync)");
+        this.setOutput(true, "String");
+        this.setColour("#3F51B5");
+        this.setTooltip("Perform a synchronous GET request (Use in Async Context!)");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["network_post"]) {
+    Blockly.Blocks["network_post"] = {
+      init() {
+        this.appendValueInput("URL").setCheck("String").appendField("Network: Post");
+        this.appendValueInput("BODY").setCheck("String").appendField("Body");
+        this.setOutput(true, "String");
+        this.setColour("#3F51B5");
+        this.setTooltip("Perform a synchronous POST request with string body");
+      },
+    } as any;
+  }
+
+  // Logic
+  if (!Blockly.Blocks["logic_ternary"]) {
+    Blockly.Blocks["logic_ternary"] = {
+      init() {
+        this.appendValueInput("IF").setCheck("Boolean").appendField("if");
+        this.appendValueInput("THEN").setCheck(null).appendField("then");
+        this.appendValueInput("ELSE").setCheck(null).appendField("else");
+        this.setOutput(true, null);
+        this.setColour("%{BKY_LOGIC_HUE}");
+        this.setTooltip("Ternary operator (condition ? trueVal : falseVal)");
+      },
+    } as any;
+  }
+
+  // Text Replace
+  if (!Blockly.Blocks["text_replace_all"]) {
+    Blockly.Blocks["text_replace_all"] = {
+      init() {
+        this.appendValueInput("TEXT").setCheck("String").appendField("Text: Replace All");
+        this.appendValueInput("REGEX").setCheck("String").appendField("Regex");
+        this.appendValueInput("REPLACEMENT").setCheck("String").appendField("Replacement");
+        this.setOutput(true, "String");
+        this.setColour("#4CAF50"); // Text category usually green
+        this.setTooltip("Replace all occurrences matching regex");
+      },
+    } as any;
+  }
+
+  // Device Info
+  if (!Blockly.Blocks["device_info"]) {
+    Blockly.Blocks["device_info"] = {
+      init() {
+        this.appendDummyInput().appendField("Device Info (SDK/Model)");
+        this.setOutput(true, "String");
+        this.setColour("#607D8B");
+        this.setTooltip("Returns a JSON string of device info");
+      },
+    } as any;
+  }
+
+  // JSON
+  if (!Blockly.Blocks["json_parse"]) {
+    Blockly.Blocks["json_parse"] = {
+      init() {
+        this.appendValueInput("JSON").setCheck("String").appendField("JSON Parse");
+        this.setOutput(true, null); // Returns Object or Array
+        this.setColour("#FF9800");
+        this.setTooltip("Parse JSON string to Object/List");
+      },
+    } as any;
+  }
+
+  // File
+  if (!Blockly.Blocks["file_write"]) {
+    Blockly.Blocks["file_write"] = {
+      init() {
+        this.appendValueInput("FILENAME").setCheck("String").appendField("File: Write");
+        this.appendValueInput("TEXT").setCheck("String").appendField("Text");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour("#9C27B0");
+        this.setTooltip("Write text to a file (in private storage)");
+      },
+    } as any;
+  }
+
+  if (!Blockly.Blocks["file_read"]) {
+    Blockly.Blocks["file_read"] = {
+      init() {
+        this.appendValueInput("FILENAME").setCheck("String").appendField("File: Read");
+        this.setOutput(true, "String");
+        this.setColour("#9C27B0");
+        this.setTooltip("Read text from a file (in private storage)");
+      },
+    } as any;
   }
 }

@@ -1,0 +1,61 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <block type="ai2_extension" id="root" x="50" y="50">
+    <field name="PACKAGE">com.example.test</field>
+    <field name="CLASSNAME">TestExtension</field>
+    <field name="DESC">Test Extension</field>
+    <field name="VERSION">1</field>
+    <field name="AUTHOR">AI2Studio</field>
+    <statement name="METHODS">
+      <block type="ai2_method" id="method1">
+        <field name="RET">String</field>
+        <field name="NAME">TestAll</field>
+        <field name="PARAMS"></field>
+        <statement name="BODY">
+          <block type="ai2_return" id="ret1">
+            <value name="VALUE">
+              <block type="lists_create_with" id="list1">
+                <mutation items="4"></mutation>
+                <value name="ADD0">
+                  <block type="date_format" id="date1">
+                    <value name="MILLIS">
+                      <block type="date_current_millis" id="now1"></block>
+                    </value>
+                    <value name="PATTERN">
+                      <block type="text" id="pat1">
+                        <field name="TEXT">yyyy-MM-dd</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <value name="ADD1">
+                  <block type="device_info" id="dev1">
+                    <field name="INFO">MODEL</field>
+                  </block>
+                </value>
+                <value name="ADD2">
+                  <block type="crypto_hash" id="crypt1">
+                    <value name="TEXT">
+                      <block type="text" id="txt1">
+                        <field name="TEXT">Hello</field>
+                      </block>
+                    </value>
+                    <field name="ALGO">SHA-256</field>
+                  </block>
+                </value>
+                <value name="ADD3">
+                  <block type="text_reverse" id="rev1">
+                    <value name="TEXT">
+                      <block type="text" id="txt2">
+                        <field name="TEXT">World</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </value>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+</xml>

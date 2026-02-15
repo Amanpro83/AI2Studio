@@ -346,6 +346,161 @@ function genExpr(
   const txt = block.getFieldValue && block.getFieldValue("TEXT");
   if (txt) return `\"${escapeQuote(decodeHtmlEntities(txt))}\"`;
 
+  // Moved block logic here
+  if (t === "date_current_millis") {
+    return "System.currentTimeMillis()";
+  }
+
+  if (t === "date_format") {
+    const millis = genExpr(block.getInputTargetBlock("MILLIS"), context) || "0";
+    const pattern = genExpr(block.getInputTargetBlock("PATTERN"), context) || '"yyyy-MM-dd HH:mm:ss"';
+    return `new SimpleDateFormat(${pattern}).format(new java.util.Date(${millis}))`;
+  }
+
+  if (t === "date_parse") {
+    const date = genExpr(block.getInputTargetBlock("DATE"), context) || '""';
+    const pattern = genExpr(block.getInputTargetBlock("PATTERN"), context) || '"yyyy-MM-dd"';
+    return `(new SimpleDateFormat(${pattern}).parse(${date}).getTime())`;
+  }
+
+  if (t === "device_info") {
+    const info = block.getFieldValue("INFO");
+    switch (info) {
+      case "MODEL": return "android.os.Build.MODEL";
+      case "MANUFACTURER": return "android.os.Build.MANUFACTURER";
+      case "ANDROID_VERSION": return "android.os.Build.VERSION.RELEASE";
+      case "SDK_LEVEL": return "String.valueOf(android.os.Build.VERSION.SDK_INT)";
+      case "BOARD": return "android.os.Build.BOARD";
+      case "BRAND": return "android.os.Build.BRAND";
+      case "DEVICE": return "android.os.Build.DEVICE";
+      case "PRODUCT": return "android.os.Build.PRODUCT";
+      default: return '""';
+    }
+  }
+
+  if (t === "crypto_hash") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    const algo = block.getFieldValue("ALGO") || "MD5";
+    return `(new java.math.BigInteger(1, java.security.MessageDigest.getInstance("${algo}").digest(${text}.getBytes())).toString(16))`;
+  }
+
+  if (t === "regex_match") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    const pattern = genExpr(block.getInputTargetBlock("PATTERN"), context) || '""';
+    return `java.util.regex.Pattern.compile(${pattern}).matcher(${text}).matches()`;
+  }
+
+  if (t === "regex_replace") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    const pattern = genExpr(block.getInputTargetBlock("PATTERN"), context) || '""';
+    const replacement = genExpr(block.getInputTargetBlock("REPLACEMENT"), context) || '""';
+    return `${text}.replaceAll(${pattern}, ${replacement})`;
+  }
+
+  if (t === "text_reverse") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    return `new StringBuilder(${text}).reverse().toString()`;
+  }
+
+  if (t === "text_trim") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    return `${text}.trim()`;
+  }
+
+  if (t === "ai2_custom_expression") {
+    return block.getFieldValue("CODE") || "null";
+  }
+
+  if (t === "native_field_get") {
+    const target = genExpr(block.getInputTargetBlock("TARGET"), context);
+    const field = block.getFieldValue("FIELD") || "field";
+    // If target is null/empty, assume static or implicit this (though unsafe) - better to output "target.field"
+    return `${target === "null" ? "this" : target}.${field}`;
+  }
+
+  if (t === "native_call") {
+    const target = genExpr(block.getInputTargetBlock("TARGET"), context);
+    const method = block.getFieldValue("METHOD") || "toString";
+    // Args handling is tricky because they come as a LIST block (Expression). 
+    // But in Blockly, an input connected to a List block returns the generated *List code* (e.g. new ArrayList...).
+    // For a native call, we want the ARGUMENTS list. 
+    // HACK: We can't easily spread an ArrayList into a function call in Java code "func(list)".
+    // We need "func(arg1, arg2)". 
+    // To solve this properly without huge complexity:
+    // We will parse the "ARGS" input block *specifically*. 
+    // If the input is "lists_create_with", we grab its inputs directly.
+
+    // Fallback: If it's a dynamic list, we can't do much. 
+    // Let's assume the user uses "create list" block.
+    const argsBlock = block.getInputTargetBlock("ARGS");
+    let argsC = "";
+    if (argsBlock && argsBlock.type === "lists_create_with") {
+      const itemCount = (argsBlock as any).itemCount_ || 0;
+      const argList = [];
+      for (let i = 0; i < itemCount; i++) {
+        argList.push(genExpr(argsBlock.getInputTargetBlock("ADD" + i), context));
+      }
+      argsC = argList.join(", ");
+    } else if (argsBlock) {
+      // It's some other block returning a list? 
+      // We can't unpack it at compile time. 
+      // We'll just output "UNKNOWN_ARGS" or similar to warn user.
+      // Or better: just pass the list and hope the method accepts a List.
+      argsC = genExpr(argsBlock, context);
+    }
+
+    return `${target === "null" ? "this" : target}.${method}(${argsC})`;
+  }
+
+  if (t === "prefs_get") {
+    const key = genExpr(block.getInputTargetBlock("KEY"), context) || '""';
+    const def = genExpr(block.getInputTargetBlock("DEFAULT"), context) || '""';
+    return `this.context.getSharedPreferences("AI2_Extension_Prefs", Context.MODE_PRIVATE).getString(${key}, String.valueOf(${def}))`;
+  }
+
+  if (t === "network_get") {
+    const url = genExpr(block.getInputTargetBlock("URL"), context) || '""';
+    // Simple one-liner for GET request using Scanner
+    return `new java.util.Scanner(new java.net.URL(${url}).openStream(), "UTF-8").useDelimiter("\\\\A").next()`;
+  }
+
+  if (t === "network_post") {
+    const url = genExpr(block.getInputTargetBlock("URL"), context) || '""';
+    const body = genExpr(block.getInputTargetBlock("BODY"), context) || '""';
+    // One-liner POST is hard. We'll use a slightly safer block or just assume user puts this in a method that throws exception.
+    // Hacky one-liner:
+    return `new Object() { public String post() throws Exception { java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(${url}).openConnection(); c.setRequestMethod("POST"); c.setDoOutput(true); c.getOutputStream().write(${body}.getBytes("UTF-8")); return new java.util.Scanner(c.getInputStream(), "UTF-8").useDelimiter("\\\\A").next(); } }.post()`;
+  }
+
+  if (t === "logic_ternary") {
+    const cond = genExpr(block.getInputTargetBlock("IF"), context) || "false";
+    const valTrue = genExpr(block.getInputTargetBlock("THEN"), context) || "null";
+    const valFalse = genExpr(block.getInputTargetBlock("ELSE"), context) || "null";
+    return `(${cond} ? ${valTrue} : ${valFalse})`;
+  }
+
+  if (t === "text_replace_all") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    const regex = genExpr(block.getInputTargetBlock("REGEX"), context) || '""';
+    const repl = genExpr(block.getInputTargetBlock("REPLACEMENT"), context) || '""';
+    return `${text}.replaceAll(${regex}, ${repl})`;
+  }
+
+  if (t === "device_info") {
+    return `"{ \\"model\\": \\"" + android.os.Build.MODEL + "\\", \\"sdk\\": " + android.os.Build.VERSION.SDK_INT + ", \\"brand\\": \\"" + android.os.Build.BRAND + "\\" }"`;
+  }
+
+  if (t === "json_parse") {
+    const json = genExpr(block.getInputTargetBlock("JSON"), context) || '"{}"';
+    // Return JSONObject or JSONArray? Let's check start char or just use JSONTokener
+    return `new org.json.JSONTokener(${json}).nextValue()`;
+  }
+
+  if (t === "file_read") {
+    const fn = genExpr(block.getInputTargetBlock("FILENAME"), context) || '"file.txt"';
+    return `new java.util.Scanner(this.context.openFileInput(${fn}), "UTF-8").useDelimiter("\\\\A").next()`;
+  }
+
   return "null";
 }
 
@@ -388,6 +543,25 @@ function genStatement(
   }
   if (t === "ai2_return") {
     const expr = genExpr(block.getInputTargetBlock("VALUE"), context);
+    // HACK: If the expression starts with "new java.util.ArrayList" or "new ArrayList", 
+    // and we assume the user MIGHT want it as a String (common mistake),
+    // we could check the enclosing method's return type... but we don't know it here easily.
+
+    // Instead, let's just return the expression. 
+    // The USER asked to "fix the java generator".
+    // The specific user code returns String but provides List.
+    // If we wrap *everything* in String.valueOf() it breaks int/boolean returns.
+
+    // Compromise: checking context? We can pass expectedType in 'context' if we refactored genMethod.
+    // Let's refactor genMethod to pass 'expectedReturnType' to genStatement.
+
+    const expected = (context as any).expectedReturnType || "void";
+    if (expected === "String" || expected === "java.lang.String") {
+      // Only wrap if it doesn't look like a string
+      if (!expr.startsWith('"') && !expr.startsWith("String.valueOf")) {
+        return `    return String.valueOf(${expr});\n`;
+      }
+    }
     return `    return ${expr};\n`;
   }
   if (t === "ai2_dispatch") {
@@ -595,6 +769,52 @@ function genStatement(
     return `    try { java.io.FileOutputStream __fos = this.context.openFileOutput(${path}, android.content.Context.MODE_PRIVATE); __fos.write(${content}.getBytes()); __fos.close(); } catch(Exception __e) { /* ignore */ }\n`;
   }
 
+  if (t === "ai2_custom_code") {
+    const code = block.getFieldValue("CODE") || "";
+    return `    ${code}\n`;
+  }
+
+  if (t === "native_field_set") {
+    const target = genExpr(block.getInputTargetBlock("TARGET"), context) || "this";
+    const field = block.getFieldValue("FIELD") || "field";
+    const val = genExpr(block.getInputTargetBlock("VALUE"), context) || "null";
+    return `    ${target}.${field} = ${val};\n`;
+  }
+
+  if (t === "vibrator_vibrate") {
+    const ms = genExpr(block.getInputTargetBlock("MS"), context) || "500";
+    return `    ((Vibrator) this.context.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(${ms});\n`;
+  }
+
+  if (t === "prefs_store") {
+    const key = genExpr(block.getInputTargetBlock("KEY"), context) || '""';
+    const val = genExpr(block.getInputTargetBlock("VALUE"), context) || '""';
+    // Using simple getAll shared prefs name or package name
+    return `    this.context.getSharedPreferences("AI2_Extension_Prefs", Context.MODE_PRIVATE).edit().putString(${key}, String.valueOf(${val})).apply();\n`;
+  }
+
+  if (t === "file_write") {
+    const fn = genExpr(block.getInputTargetBlock("FILENAME"), context) || '"file.txt"';
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    return `    try (java.io.OutputStreamWriter _osw = new java.io.OutputStreamWriter(this.context.openFileOutput(${fn}, Context.MODE_PRIVATE))) { _osw.write(${text}); } catch(Exception e) { throw new RuntimeException(e); }\n`;
+  }
+
+  if (t === "toast_show") {
+    const msg = genExpr(block.getInputTargetBlock("MESSAGE"), context) || '""';
+    const dur = block.getFieldValue("DURATION") === "1" ? "Toast.LENGTH_LONG" : "Toast.LENGTH_SHORT";
+    return `    Toast.makeText(this.context, ${msg}, ${dur}).show();\n`;
+  }
+
+  if (t === "clipboard_copy") {
+    const text = genExpr(block.getInputTargetBlock("TEXT"), context) || '""';
+    return `    ((ClipboardManager) this.context.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("AI2", ${text}));\n`;
+  }
+
+  if (t === "intent_open") {
+    const url = genExpr(block.getInputTargetBlock("URL"), context) || '""';
+    return `    Intent __i = new Intent(Intent.ACTION_VIEW, Uri.parse(${url}));\n    __i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);\n    this.context.startActivity(__i);\n`;
+  }
+
   const expr = genExpr(block, context);
   if (expr !== "null") return `    ${expr};\n`;
   return `    // unsupported block: ${t}\n`;
@@ -632,18 +852,71 @@ function genMethod(block: Blockly.Block) {
   let body = "";
   const first = block.getInputTargetBlock("BODY");
   let cur = first;
-  const context = { props: [], params: paramNames };
+  const context = { props: [], params: paramNames, expectedReturnType: ret };
   while (cur) {
     body += genStatement(cur, context);
     cur = cur.getNextBlock();
   }
 
   const needsReturn = ret !== "void";
-  const returnLine = needsReturn
+  let returnLine = needsReturn
     ? `    return ${ret === "boolean" ? "false" : ret === "int" ? "0" : ret === "float" ? "0f" : "null"};\n`
     : "";
 
-  return `  @SimpleFunction(description = \"${escapeQuote(nameRaw)} function\")\n  public ${ret} ${name}(${paramSig}) {\n${body}${returnLine}  }\n`;
+  // If the last block is an explicit return, we might omit the default return, or rely on Java compiler analysis.
+  // A simple heuristic: check if the body ends with "return ...;"
+  // But body is a string.
+  // If we processed ai2_return, we could have tracked it.
+
+  if (body.trim().endsWith(";") && body.includes("return ")) {
+    // This is risky if the return is conditional.
+    // Better safe than sorry: keep the default return but maybe comment it out or wrap in unreachable block?
+    // No, Java compiler errors on "unreachable statement".
+    // If the user's code is "return ...; return null;", the second return is unreachable.
+    // So we SHOULD remove it if the last statement is definitely a return.
+    // However, without parsing, it's hard.
+    // Let's modify genMethod to accept `lastBlockType`.
+  }
+
+  // Let's do this: check if the last top-level block in the body was 'ai2_return'
+  let lastWasReturn = false;
+  let b = first;
+  while (b) {
+    if (b.type === "ai2_return") lastWasReturn = true;
+    else lastWasReturn = false;
+    b = b.getNextBlock();
+  }
+
+  if (lastWasReturn) {
+    returnLine = "";
+  }
+
+  // FIX: If return type is String, verify the returned block. 
+  // If it's a list or non-string, wrap in String.valueOf(...) to prevent compile errors.
+  let isStringReturn = ret === "String" || ret === "java.lang.String";
+
+  // Re-process body to inject specific return logic? 
+  // No, genStatement calls genExpr. We need to handle this inside genStatement(ai2_return) or here.
+  // Actually, ai2_return returns "return ...;" statement. 
+  // We can't easily intercept it here because 'body' is already a flat string.
+
+  // STRATEGY: We will rely on genStatement for ai2_return to include casting if needed.
+  // BUT we don't pass 'method return type' to genStatement.
+
+  // Alternative: We modify ai2_return generation to ALWAYS use String.valueOf logic? No, that breaks other types.
+
+  // Let's modify genStatement signature to accept context? It already does.
+  // But context only has props/params.
+
+  // EASIER FIX: Since current user issue involves a complex expression, 
+  // and we can't easily parse 'body' string, let's just add 'throws Exception' for the "Limitless" support.
+  // AND for the return type mismatch: The user is returning an ArrayList.
+  // The provided code snippet shows: return new java.util.ArrayList...
+  // If we can't change the block, we can't fix the code 100% without context.
+  // BUT, we can make `ai2_return` smarter.
+
+  // Let's change the signature first.
+  return `  @SimpleFunction(description = \"${escapeQuote(nameRaw)} function\")\n  public ${ret} ${name}(${paramSig}) throws Exception {\n${body}${returnLine}  }\n`;
 }
 
 function genEvent(block: Blockly.Block) {
@@ -673,6 +946,18 @@ export function generateJavaFromWorkspace(
   const cls = sanitizeIdentifier(clsRaw, { pascal: true });
 
   const header = `package ${pkg};\n\n`;
+  const helpUrl = root.getFieldValue("HELP_URL") || "";
+  const libsRaw = root.getFieldValue("LIBRARIES") || "";
+  const importsRaw = root.getFieldValue("IMPORTS") || "";
+
+  const libList = libsRaw.split(",").map((l: string) => l.trim()).filter(Boolean);
+  const importList = importsRaw.split(",").map((l: string) => l.trim()).filter(Boolean);
+
+  const usesLibs = libList.length > 0 ? `, libraries = "${libList.join(", ")}"` : "";
+  const helpAnno = helpUrl ? `, helpUrl = "${escapeQuote(helpUrl)}"` : "";
+
+  const extraImports = importList.map((i: string) => `import ${i};`).join("\n");
+
   const imports = [
     "import android.content.Context;",
     "import com.google.appinventor.components.annotations.*;",
@@ -685,9 +970,20 @@ export function generateJavaFromWorkspace(
     "import android.os.Handler;",
     "import android.os.Looper;",
     "import android.util.Base64;",
+    "import java.text.SimpleDateFormat;",
+    "import java.security.MessageDigest;",
+    "import java.util.regex.*;",
+    "import android.os.Build;",
+    "import android.widget.Toast;",
+    "import android.content.Intent;",
+    "import android.net.Uri;",
+    "import android.content.ClipData;",
+    "import android.content.ClipboardManager;",
+    "import android.os.Vibrator;",
+    extraImports
   ].join("\n");
 
-  const anno = `@DesignerComponent(version = ${version}, description = \"${escapeQuote(desc)}\", category = ComponentCategory.EXTENSION, nonVisible = true, iconName = \"\")\n@SimpleObject(external = true)`;
+  const anno = `@DesignerComponent(version = ${version}, description = \"${escapeQuote(desc)}\", category = ComponentCategory.EXTENSION, nonVisible = true, iconName = \"\"${helpAnno})${usesLibs}\n@SimpleObject(external = true)`;
 
   const classHeader = `public class ${cls} extends AndroidNonvisibleComponent {\n\n  private final Context context;\n\n  public ${cls}(ComponentContainer container) {\n    super(container.$form());\n    this.context = container.$context();\n  }\n`;
 

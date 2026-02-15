@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
 import BlocklyEditor from "@/components/BlocklyEditor";
 import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
+import { Wand2, Moon, Sun } from "lucide-react";
 
 export default function Index() {
   const [ready, setReady] = useState(false);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     setReady(true);
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setDark(true);
+      document.documentElement.classList.add("dark");
+    }
   }, []);
+
+  const toggleTheme = () => {
+    const isDark = !dark;
+    setDark(isDark);
+    if (isDark) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  };
 
   return (
     <div className="space-y-10">
@@ -36,6 +48,15 @@ export default function Index() {
                   Start Building
                 </Button>
               </a>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-transparent text-white border-white/40 hover:bg-white/10"
+                onClick={toggleTheme}
+              >
+                {dark ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                {dark ? "Light Mode" : "Dark Mode"}
+              </Button>
               <a
                 href="https://ai2.appinventor.mit.edu/reference/components/extensions.html"
                 target="_blank"

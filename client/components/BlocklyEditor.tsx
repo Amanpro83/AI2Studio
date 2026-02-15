@@ -7,6 +7,11 @@ import { registerAI2Blocks } from "@/lib/blockly/ai2Blocks";
 import { generateJavaFromWorkspace } from "@/lib/blockly/javaGenerator";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCw, Save, Upload } from "lucide-react";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 // Module-level global workspace reference used by error handlers
 let globalBlocklyWorkspace: { current: Blockly.WorkspaceSvg | null } = {
@@ -30,7 +35,7 @@ function ensureBlocklyMessages() {
     } catch (e) {
       try {
         Msg[key] = val;
-      } catch (e2) {}
+      } catch (e2) { }
     }
   };
 
@@ -113,7 +118,7 @@ function ensureBlocklyMessages() {
         // ignore
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // Text indexOf block expects three tokens: the search, the text, and the operator (first/last)
   ensure("TEXT_INDEXOF_TITLE", "index of %1 in %2 %3");
@@ -159,6 +164,51 @@ function ensureBlocklyMessages() {
   ensure("CONTROLS_FOREACH_TITLE", "for each %1 in %2");
   ensure("CONTROLS_FOREACH_INPUT_DO", "do %1");
   ensure("CONTROLS_FOREACH_TOOLTIP", "Iterate over each item in a list");
+
+  // Logic / Math / Loops Category Names (Critical Fix)
+  ensure("LOGIC_HUE", "210");
+  ensure("LOOPS_HUE", "120");
+  ensure("MATH_HUE", "230");
+  ensure("TEXTS_HUE", "160");
+  ensure("LISTS_HUE", "260");
+  ensure("COLOUR_HUE", "20");
+  ensure("VARIABLES_HUE", "330");
+  ensure("VARIABLES_DYNAMIC_HUE", "310");
+  ensure("PROCEDURES_HUE", "290");
+
+  // Explicitly overwrite Category names if they are BKY tokens
+  // These are often used by the toolbox XML if it refers to %{BKY_...}
+  ensure("CAT_LOGIC", "Logic");
+  ensure("CAT_LOOPS", "Loops");
+  ensure("CAT_MATH", "Math");
+  ensure("CAT_TEXT", "Text");
+  ensure("CAT_LISTS", "Lists");
+  ensure("CAT_COLOUR", "Color");
+  ensure("CAT_VARIABLES", "Variables");
+  ensure("CAT_PROCEDURES", "Functions");
+
+  // Common blocks that might have missing titles
+  ensure("MATH_ADDITION_SYMBOL", "+");
+  ensure("MATH_SUBTRACTION_SYMBOL", "-");
+  ensure("MATH_DIVISION_SYMBOL", "÷");
+  ensure("MATH_MULTIPLICATION_SYMBOL", "×");
+  ensure("MATH_POWER_SYMBOL", "^");
+  ensure("MATH_TRIG_SIN", "sin");
+  ensure("MATH_TRIG_COS", "cos");
+  ensure("MATH_TRIG_TAN", "tan");
+  ensure("MATH_TRIG_ASIN", "asin");
+  ensure("MATH_TRIG_ACOS", "acos");
+  ensure("MATH_TRIG_ATAN", "atan");
+  ensure("MATH_ARITHMETIC_TOOLTIP_ADD", "Return the sum of the two numbers.");
+  ensure("MATH_ARITHMETIC_HELPURL", "https://en.wikipedia.org/wiki/Arithmetic");
+  ensure("LOGIC_OPERATION_TOOLTIP_AND", "Return true if both inputs are true.");
+  ensure("LOGIC_OPERATION_AND", "and");
+  ensure("LOGIC_OPERATION_OR", "or");
+  ensure("LOGIC_COMPARE_TOOLTIP_EQ", "Return true if both inputs equal each other.");
+  ensure("LOGIC_COMPARE_HELPURL", "https://en.wikipedia.org/wiki/Inequality_(mathematics)");
+  ensure("LOGIC_BOOLEAN_TRUE", "true");
+  ensure("LOGIC_BOOLEAN_FALSE", "false");
+  ensure("LOGIC_NULL", "null");
 
   // CATEGORY and label fallbacks when Msg values reference %{BKY_...} tokens
   const categoryFallbacks: Record<string, string> = {
@@ -222,7 +272,7 @@ function ensureBlocklyMessages() {
           human = human.charAt(0).toUpperCase() + human.slice(1);
           Msg[k] = human;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   } catch (e) {
     // ignore
@@ -327,6 +377,30 @@ const toolboxXml = `
     <block type="colour_rgb"></block>
   </category>
   <sep></sep>
+  <category id="cat_date" name="Date & Time" colour="#EC407A">
+    <block type="date_current_millis"></block>
+    <block type="date_format"></block>
+    <block type="date_parse"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_device" name="Device & Info" colour="#78909C">
+    <block type="device_info"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_crypto" name="Crypto" colour="#AB47BC">
+    <block type="crypto_hash"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_regex" name="Regex" colour="#5C6BC0">
+    <block type="regex_match"></block>
+    <block type="regex_replace"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_string_utils" name="String Utils" colour="#10B981">
+    <block type="text_reverse"></block>
+    <block type="text_trim"></block>
+  </category>
+  <sep></sep>
   <category id="cat_variables" name="Variables" colour="#FFA500" custom="VARIABLE" expanded="true"></category>
   <sep></sep>
   <category id="cat_functions" name="Functions" colour="#9C27B0" custom="PROCEDURE"></category>
@@ -335,6 +409,34 @@ const toolboxXml = `
     <block type="text_print"></block>
     <block type="controls_flow_statements"></block>
   </category>
+  <sep></sep>
+  <category id="cat_android" name="Android" colour="#4CAF50">
+    <block type="toast_show"></block>
+    <block type="clipboard_copy"></block>
+    <block type="vibrator_vibrate"></block>
+    <block type="prefs_store"></block>
+    <block type="prefs_get"></block>
+    <block type="intent_open"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_advanced" name="Advanced" colour="#607D8B">
+    <block type="ai2_custom_code"></block>
+    <block type="ai2_custom_expression"></block>
+    <sep></sep>
+    <block type="native_call"></block>
+    <block type="native_field_get"></block>
+    <block type="native_field_set"></block>
+    <sep></sep>
+    <block type="network_get"></block>
+    <block type="network_post"></block>
+    <block type="json_parse"></block>
+    <block type="file_write"></block>
+    <block type="file_read"></block>
+    <block type="text_replace_all"></block>
+    <block type="device_info"></block>
+  </category>
+  <category id="cat_logic" name="Logic" colour="%{BKY_LOGIC_HUE}">
+    <block type="logic_ternary"></block>
 </xml>`;
 
 // Add global error listeners for runtime debugging
@@ -360,20 +462,20 @@ if (typeof window !== "undefined") {
               } catch (e) {
                 try {
                   ws.updateToolbox && ws.updateToolbox(toolboxXml as any);
-                } catch (e2) {}
+                } catch (e2) { }
               }
             }
           }
-        } catch (e) {}
+        } catch (e) { }
         return;
       }
       console.error("Global error:", ev.error || ev.message);
-    } catch (e) {}
+    } catch (e) { }
   });
   window.addEventListener("unhandledrejection", (ev: any) => {
     try {
       console.error("Unhandled rejection:", ev.reason);
-    } catch (e) {}
+    } catch (e) { }
   });
 }
 
@@ -533,6 +635,43 @@ export default function BlocklyEditor() {
           Blockly.Xml.domToWorkspace(xml, workspace);
         }
 
+        // Define a custom Dark Theme to match the app's aesthetic
+        const DarkTheme = Blockly.Theme.defineTheme('dark', {
+          name: 'dark',
+          base: Blockly.Themes.Classic,
+          componentStyles: {
+            workspaceBackgroundColour: '#1e1e20',
+            toolboxBackgroundColour: '#27272a',
+            toolboxForegroundColour: '#fff',
+            flyoutBackgroundColour: '#27272a',
+            flyoutForegroundColour: '#ccc',
+            flyoutOpacity: 1,
+            scrollbarColour: '#555',
+            markerColour: '#fff',
+            cursorColour: '#fff',
+          },
+          fontStyle: {
+            family: 'Inter, sans-serif',
+            weight: 'bold',
+            size: 10
+          },
+          startHats: true,
+        });
+
+        const updateTheme = () => {
+          const isDark = document.documentElement.classList.contains("dark");
+          if (workspaceRef.current) {
+            workspaceRef.current.setTheme(isDark ? DarkTheme : Blockly.Themes.Classic);
+          }
+        };
+
+        // Watch for class changes on html element
+        const observer = new MutationObserver(updateTheme);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+        // Initial theme set
+        updateTheme();
+
         const onChange = () => {
           try {
             const java = generateJavaFromWorkspace(workspace);
@@ -548,21 +687,18 @@ export default function BlocklyEditor() {
 
         workspace.addChangeListener(onChange);
         onChange();
+
+        return () => {
+          observer.disconnect();
+          if (createdWorkspace) createdWorkspace.dispose();
+          workspaceRef.current = null;
+          globalBlocklyWorkspace.current = null;
+        };
       } catch (e: any) {
         console.error("Error initializing Blockly workspace:", e);
         setError(String(e?.message || e));
       }
     })();
-
-    return () => {
-      try {
-        if (createdWorkspace) createdWorkspace.dispose();
-      } catch (e) {
-        console.warn("Error disposing workspace", e);
-      }
-      workspaceRef.current = null;
-      globalBlocklyWorkspace.current = null;
-    };
   }, []);
 
   const downloadJava = () => {
@@ -616,66 +752,74 @@ export default function BlocklyEditor() {
   };
 
   return (
-    <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div className="w-full h-[800px] border rounded-xl overflow-hidden shadow-sm bg-background">
       {error && (
-        <div className="col-span-full p-4 rounded-md bg-destructive/10 border border-destructive text-destructive-foreground">
+        <div className="p-4 bg-destructive/10 border-b border-destructive text-destructive-foreground">
           <strong className="block">Blockly Error</strong>
           <pre className="whitespace-pre-wrap text-sm mt-2">{error}</pre>
         </div>
       )}
 
-      <div className="flex flex-col rounded-xl border bg-card shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-gradient-to-r from-primary/10 to-transparent">
-          <h2 className="text-sm font-semibold">Blockly Workspace</h2>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const ws = workspaceRef.current;
-                if (!ws) return;
-                ws.cleanUp();
-              }}
-            >
-              <RefreshCw className="w-4 h-4" /> Cleanup
-            </Button>
-            <Button size="sm" variant="outline" onClick={exportWorkspace}>
-              <Save className="w-4 h-4" /> Export XML
-            </Button>
-            <label className="inline-flex items-center gap-2 text-sm px-3 py-2 border rounded-md cursor-pointer hover:bg-accent">
-              <Upload className="w-4 h-4" /> Import XML
-              <input
-                type="file"
-                accept=".xml"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) importWorkspace(f);
-                }}
-              />
-            </label>
+      <ResizablePanelGroup direction="vertical">
+        <ResizablePanel defaultSize={30} minSize={10}>
+          <div className="flex flex-col h-full bg-card">
+            <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40">
+              <h2 className="text-sm font-semibold">
+                Generated Java
+              </h2>
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={downloadJava}>
+                  <Download className="w-4 h-4" /> Download .java
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden relative">
+              <pre className="absolute inset-0 overflow-auto text-sm leading-6 p-4 bg-zinc-950 text-zinc-100 font-mono">
+                <code>{code}</code>
+              </pre>
+            </div>
           </div>
-        </div>
-        <div className="h-[600px] xl:h-[720px]" ref={blocklyDiv} />
-      </div>
+        </ResizablePanel>
 
-      <div className="flex flex-col rounded-xl border bg-card shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-gradient-to-r from-primary/10 to-transparent">
-          <h2 className="text-sm font-semibold">
-            Generated Java (AI2 Extension)
-          </h2>
-          <div className="flex items-center gap-2">
-            <Button size="sm" onClick={downloadJava}>
-              <Download className="w-4 h-4" /> Download .java
-            </Button>
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={70} minSize={30}>
+          <div className="flex flex-col h-full bg-card">
+            <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40">
+              <h2 className="text-sm font-semibold">Blockly Workspace</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const ws = workspaceRef.current;
+                    if (!ws) return;
+                    ws.cleanUp();
+                  }}
+                >
+                  <RefreshCw className="w-4 h-4" /> Cleanup
+                </Button>
+                <Button size="sm" variant="outline" onClick={exportWorkspace}>
+                  <Save className="w-4 h-4" /> Export XML
+                </Button>
+                <label className="inline-flex items-center gap-2 text-sm px-3 py-2 border rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <Upload className="w-4 h-4" /> Import XML
+                  <input
+                    type="file"
+                    accept=".xml"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) importWorkspace(f);
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className="flex-1 w-full bg-background" ref={blocklyDiv} />
           </div>
-        </div>
-        <div className="p-0">
-          <pre className="h-[600px] xl:h-[720px] overflow-auto text-sm leading-6 p-4 bg-zinc-950 text-zinc-100">
-            <code>{code}</code>
-          </pre>
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
