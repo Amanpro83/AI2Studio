@@ -1,0 +1,3 @@
+@echo off
+echo Running client build and running dev...
+npm run build && npm run dev
