@@ -6,12 +6,31 @@ import "blockly/msg/en";
 import { registerAI2Blocks } from "@/lib/blockly/ai2Blocks";
 import { generateJavaFromWorkspace } from "@/lib/blockly/javaGenerator";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, Save, Upload } from "lucide-react";
+import { Download, RefreshCw, Save, Upload, Book } from "lucide-react";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetTrigger
+} from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea"; // Assuming exists or use standard textarea
 
 // Module-level global workspace reference used by error handlers
 let globalBlocklyWorkspace: { current: Blockly.WorkspaceSvg | null } = {
@@ -298,11 +317,13 @@ const toolboxXml = `
   <sep></sep>
   <category id="cat_logic" name="Logic" colour="#5C6BC0">
     <block type="controls_if"></block>
+    <block type="controls_try_catch"></block>
     <block type="logic_compare"></block>
     <block type="logic_operation"></block>
     <block type="logic_negate"></block>
     <block type="logic_boolean"></block>
     <block type="logic_null"></block>
+    <block type="logic_ternary"></block>
   </category>
   <sep></sep>
   <category id="cat_loops" name="Loops" colour="#0EA5E9">
@@ -312,10 +333,70 @@ const toolboxXml = `
     <block type="controls_forEach"></block>
   </category>
   <sep></sep>
-  <category id="cat_math" name="Math" colour="#F59E0B">
+  <category id="cat_device" name="Device" colour="120">
+    <block type="toast_show"></block>
+    <block type="android_log"></block>
+    <block type="clipboard_copy"></block>
+    <block type="android_clipboard_get"></block>
+    <block type="android_clipboard_set"></block>
+    <block type="device_info"></block>
+    <block type="device_battery_level"></block>
+    <block type="vibrator_vibrate"></block>
+    <block type="android_share_text"></block>
+    <block type="device_get_language"></block>
+    <block type="device_is_dark_mode"></block>
+    <block type="prefs_store"></block>
+    <block type="prefs_get"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_web" name="Web" colour="40">
+    <block type="network_get"></block>
+    <block type="network_post"></block>
+    <block type="android_open_url"></block>
+    <block type="device_is_online"></block>
+    <block type="web_url_encode"></block>
+    <block type="web_url_decode"></block>
+    <block type="web_html_decode"></block>
+    <block type="base64_encode"></block>
+    <block type="base64_decode"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_files" name="Files" colour="200">
+    <block type="file_write"></block>
+    <block type="file_read"></block>
+    <block type="file_exists"></block>
+    <block type="file_delete"></block>
+    <block type="file_list"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_crypto" name="Crypto" colour="0">
+    <block type="crypto_hash"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_map" name="Map" colour="290">
+    <block type="maps_create_with"></block>
+    <block type="map_put"></block>
+    <block type="map_get"></block>
+    <block type="map_remove"></block>
+    <block type="map_is_empty"></block>
+    <block type="map_keys"></block>
+    <block type="map_values"></block>
+    <block type="map_contains_key"></block>
+    <block type="map_size"></block>
+    <block type="json_parse"></block>
+    <block type="json_get"></block>
+  </category>
+  <sep></sep>
+  <category id="cat_math" name="Math+" colour="230">
     <block type="math_number"></block>
     <block type="math_arithmetic"></block>
+    <block type="math_parse_int"></block>
+    <block type="math_parse_float"></block>
     <block type="math_random_int"></block>
+    <block type="math_random_float"></block>
+    <block type="math_min_max"></block>
+    <block type="math_constrain"></block>
+    <block type="math_is_number"></block>
     <block type="math_single"></block>
     <block type="math_trig"></block>
     <block type="math_trig_simple"></block>
@@ -325,15 +406,22 @@ const toolboxXml = `
   <category id="cat_text" name="Text" colour="#10B981">
     <block type="text"></block>
     <block type="text_join"></block>
+    <block type="text_join_list"></block>
     <block type="text_length"></block>
     <block type="text_isEmpty"></block>
     <block type="text_indexOf"></block>
     <block type="text_charAt"></block>
     <block type="text_getSubstring"></block>
     <block type="text_changeCase"></block>
+    <block type="text_count"></block>
+    <block type="text_replace_all"></block>
+    <block type="text_replace_regex"></block>
+    <block type="text_split"></block>
     <block type="text_contains"></block>
     <block type="text_startswith"></block>
     <block type="text_endswith"></block>
+    <block type="text_trim"></block>
+    <block type="text_reverse"></block>
   </category>
   <sep></sep>
   <category id="cat_lists" name="Lists" colour="#8B5CF6">
@@ -345,18 +433,32 @@ const toolboxXml = `
     <block type="lists_append"></block>
     <block type="lists_remove_at"></block>
     <block type="lists_index_of"></block>
+    <block type="lists_sort"></block>
+    <block type="lists_reverse"></block>
+    <block type="lists_shuffle"></block>
+    <block type="lists_pick_random"></block>
+    <block type="lists_copy"></block>
   </category>
   <sep></sep>
   <category id="cat_maps" name="Maps / JSON" colour="#EF4444">
     <block type="maps_create_with"></block>
     <block type="map_put"></block>
     <block type="map_get"></block>
+    <block type="map_keys"></block>
+    <block type="map_values"></block>
+    <block type="map_contains_key"></block>
+    <block type="map_remove"></block>
+    <block type="map_size"></block>
     <block type="json_parse"></block>
     <block type="json_get"></block>
   </category>
   <sep></sep>
   <category id="cat_network" name="Network" colour="#06B6D4">
     <block type="http_get"></block>
+    <block type="network_get"></block>
+    <block type="network_post"></block>
+    <block type="device_is_online"></block>
+    <block type="android_open_url"></block>
   </category>
   <sep></sep>
   <category id="cat_async" name="Concurrency / Timers" colour="#7C3AED">
@@ -367,6 +469,9 @@ const toolboxXml = `
   <category id="cat_files" name="Files & Encoding" colour="#64748B">
     <block type="file_write"></block>
     <block type="file_read"></block>
+    <block type="file_exists"></block>
+    <block type="file_delete"></block>
+    <block type="file_list"></block>
     <block type="base64_encode"></block>
     <block type="base64_decode"></block>
   </category>
@@ -378,65 +483,45 @@ const toolboxXml = `
   </category>
   <sep></sep>
   <category id="cat_date" name="Date & Time" colour="#EC407A">
-    <block type="date_current_millis"></block>
+    <block type="date_now_millis"></block>
     <block type="date_format"></block>
     <block type="date_parse"></block>
   </category>
   <sep></sep>
   <category id="cat_device" name="Device & Info" colour="#78909C">
     <block type="device_info"></block>
+    <block type="device_battery_level"></block>
+    <block type="vibrator_vibrate"></block>
+    <block type="device_vibrate"></block>
   </category>
   <sep></sep>
   <category id="cat_crypto" name="Crypto" colour="#AB47BC">
     <block type="crypto_hash"></block>
   </category>
   <sep></sep>
-  <category id="cat_regex" name="Regex" colour="#5C6BC0">
-    <block type="regex_match"></block>
-    <block type="regex_replace"></block>
-  </category>
-  <sep></sep>
-  <category id="cat_string_utils" name="String Utils" colour="#10B981">
-    <block type="text_reverse"></block>
-    <block type="text_trim"></block>
+  <category id="cat_android" name="Android" colour="#4CAF50">
+    <block type="toast_show"></block>
+    <block type="android_toast"></block>
+    <block type="android_log"></block>
+    <block type="clipboard_copy"></block>
+    <block type="android_clipboard_get"></block>
+    <block type="android_clipboard_set"></block>
+    <block type="android_share_text"></block>
+    <block type="prefs_store"></block>
+    <block type="prefs_get"></block>
   </category>
   <sep></sep>
   <category id="cat_variables" name="Variables" colour="#FFA500" custom="VARIABLE" expanded="true"></category>
   <sep></sep>
   <category id="cat_functions" name="Functions" colour="#9C27B0" custom="PROCEDURE"></category>
   <sep></sep>
-  <category id="cat_misc" name="Other" colour="#9E9E9E">
-    <block type="text_print"></block>
-    <block type="controls_flow_statements"></block>
-  </category>
-  <sep></sep>
-  <category id="cat_android" name="Android" colour="#4CAF50">
-    <block type="toast_show"></block>
-    <block type="clipboard_copy"></block>
-    <block type="vibrator_vibrate"></block>
-    <block type="prefs_store"></block>
-    <block type="prefs_get"></block>
-    <block type="intent_open"></block>
-  </category>
-  <sep></sep>
   <category id="cat_advanced" name="Advanced" colour="#607D8B">
     <block type="ai2_custom_code"></block>
     <block type="ai2_custom_expression"></block>
-    <sep></sep>
     <block type="native_call"></block>
     <block type="native_field_get"></block>
     <block type="native_field_set"></block>
-    <sep></sep>
-    <block type="network_get"></block>
-    <block type="network_post"></block>
-    <block type="json_parse"></block>
-    <block type="file_write"></block>
-    <block type="file_read"></block>
-    <block type="text_replace_all"></block>
-    <block type="device_info"></block>
   </category>
-  <category id="cat_logic" name="Logic" colour="%{BKY_LOGIC_HUE}">
-    <block type="logic_ternary"></block>
 </xml>`;
 
 // Add global error listeners for runtime debugging
@@ -489,6 +574,17 @@ export default function BlocklyEditor() {
   );
 
   const [error, setError] = useState<string | null>(null);
+
+  // AI Preview State
+  const [isAiSheetOpen, setIsAiSheetOpen] = useState(false);
+  const [aiCodePreview, setAiCodePreview] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Enhancement Workspace State
+  const [isEnhanceOpen, setIsEnhanceOpen] = useState(false);
+  const [enhancedCode, setEnhancedCode] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   useEffect(() => {
     if (!blocklyDiv.current) return;
@@ -751,75 +847,254 @@ export default function BlocklyEditor() {
     reader.readAsText(file);
   };
 
-  return (
-    <div className="w-full h-[800px] border rounded-xl overflow-hidden shadow-sm bg-background">
-      {error && (
-        <div className="p-4 bg-destructive/10 border-b border-destructive text-destructive-foreground">
-          <strong className="block">Blockly Error</strong>
-          <pre className="whitespace-pre-wrap text-sm mt-2">{error}</pre>
-        </div>
-      )}
+  // Responsive Layout State
+  const [isVertical, setIsVertical] = useState(false);
 
-      <ResizablePanelGroup direction="vertical">
-        <ResizablePanel defaultSize={30} minSize={10}>
-          <div className="flex flex-col h-full bg-card">
-            <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40">
-              <h2 className="text-sm font-semibold">
-                Generated Java
-              </h2>
-              <div className="flex items-center gap-2">
-                <Button size="sm" onClick={downloadJava}>
-                  <Download className="w-4 h-4" /> Download .java
-                </Button>
-              </div>
+  // Theme State
+  const [isDark, setIsDark] = useState(true);
+
+  // Help Dialog State
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  useEffect(() => {
+    const checkSize = () => setIsVertical(window.innerWidth < 1024);
+    checkSize();
+    window.addEventListener("resize", checkSize);
+
+    // Initial Theme Check
+    if (document.documentElement.classList.contains("dark")) setIsDark(true);
+    else setIsDark(false);
+
+    return () => window.removeEventListener("resize", checkSize);
+  }, []);
+
+  const toggleTheme = () => {
+    const newDark = !isDark;
+    setIsDark(newDark);
+    if (newDark) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+  };
+
+  return (
+    <div className="h-[calc(100vh-2rem)] w-full bg-gray-50 dark:bg-zinc-950 transition-colors duration-300 text-zinc-900 dark:text-zinc-100 font-sans border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden shadow-2xl flex flex-col">
+      {/* Top Bar */}
+      <div className="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between px-4 shrink-0 transition-colors duration-300">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-indigo-500/20">AI2</div>
+            <div className="flex flex-col">
+              <span className="font-bold tracking-tight text-zinc-800 dark:text-zinc-100 leading-none">Extension Builder</span>
+              <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">v3.2 Light/Dark</span>
             </div>
-            <div className="flex-1 overflow-hidden relative">
-              <pre className="absolute inset-0 overflow-auto text-sm leading-6 p-4 bg-zinc-950 text-zinc-100 font-mono">
-                <code>{code}</code>
-              </pre>
-            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Docs Button */}
+          <Button size="icon" variant="ghost" className="rounded-full h-9 w-9 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white" onClick={() => window.open('/docs', '_blank')} title="Open Documentation">
+            <Book className="w-5 h-5" />
+          </Button>
+
+          {/* Help Button */}
+          <Button size="icon" variant="ghost" className="rounded-full h-9 w-9 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white" onClick={() => setIsHelpOpen(true)}>
+            <span className="text-lg font-serif italic">i</span>
+          </Button>
+
+          {/* Theme Toggle */}
+          <Button size="icon" variant="ghost" className="rounded-full h-9 w-9 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-all" onClick={toggleTheme}>
+            {isDark ? "🌙" : "☀️"}
+          </Button>
+
+          <div className="h-6 w-[1px] bg-zinc-200 dark:bg-zinc-800 mx-2"></div>
+
+          <Button size="sm" variant="ghost" className="h-9 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white hidden sm:flex" onClick={() => workspaceRef.current?.cleanUp()}>
+            <RefreshCw className="w-4 h-4 mr-2" /> Clean
+          </Button>
+          <Button size="sm" variant="ghost" className="h-9 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white" onClick={exportWorkspace}>
+            <Save className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Save XML</span>
+          </Button>
+          <Button size="sm" className="h-9 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 shadow-md shadow-indigo-500/10 px-4" onClick={async () => {
+            try {
+              const res = await fetch("/api/build", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ javaCode: code, jarFiles: [] })
+              });
+              if (!res.ok) throw new Error(await res.text());
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "extension.aix";
+              a.click();
+            } catch (e: any) { alert("Build Result: " + e.message); }
+          }}>
+            Build .aix
+          </Button>
+        </div>
+      </div>
+
+      <ResizablePanelGroup direction={isVertical ? "vertical" : "horizontal"} className="flex-1 bg-gray-100 dark:bg-black">
+
+        {/* PANE 1: BLOCKLY (MAIN) */}
+        <ResizablePanel order={1} defaultSize={isVertical ? 50 : 50} minSize={30} className="bg-white dark:bg-[#1e1e20] relative flex flex-col border-r border-zinc-200 dark:border-zinc-800 shadow-sm z-10">
+          <div className="absolute top-2 left-2 z-10 pointer-events-none">
+            <span className="px-2 py-1 bg-white/90 dark:bg-zinc-800/80 backdrop-blur text-[10px] font-mono font-bold text-zinc-500 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700 shadow-sm">BLOCKS</span>
+          </div>
+          <div className="flex-1 w-full h-full" ref={blocklyDiv} />
+        </ResizablePanel>
+
+        <ResizableHandle withHandle className="bg-zinc-200 dark:bg-zinc-800 w-1.5 transition-colors hover:bg-indigo-400 dark:hover:bg-indigo-600 data-[panel-group-direction=vertical]:h-1.5 data-[panel-group-direction=vertical]:w-full" />
+
+        {/* PANE 2: JAVA SOURCE */}
+        <ResizablePanel order={2} defaultSize={isVertical ? 25 : 25} minSize={15} className={`bg-white dark:bg-[#0f0f11] flex flex-col ${isVertical ? 'border-b' : 'border-r'} border-zinc-200 dark:border-zinc-800 transition-colors duration-300`}>
+          <div className="h-10 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-3 bg-gray-50 dark:bg-zinc-900/50 shrink-0">
+            <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Java Preview</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded" onClick={downloadJava}>
+              <Download className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-auto relative group bg-white dark:bg-[#0f0f11]">
+            <pre className="p-4 text-xs font-mono text-blue-700 dark:text-blue-200 leading-5 whitespace-pre-wrap transition-colors">
+              {code}
+            </pre>
           </div>
         </ResizablePanel>
 
-        <ResizableHandle withHandle />
+        <ResizableHandle withHandle className="bg-zinc-200 dark:bg-zinc-800 w-1.5 transition-colors hover:bg-indigo-400 dark:hover:bg-indigo-600 data-[panel-group-direction=vertical]:h-1.5 data-[panel-group-direction=vertical]:w-full" />
 
-        <ResizablePanel defaultSize={70} minSize={30}>
-          <div className="flex flex-col h-full bg-card">
-            <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/40">
-              <h2 className="text-sm font-semibold">Blockly Workspace</h2>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const ws = workspaceRef.current;
-                    if (!ws) return;
-                    ws.cleanUp();
-                  }}
-                >
-                  <RefreshCw className="w-4 h-4" /> Cleanup
+        {/* PANE 3: AI ASSISTANT (PERMANENT) */}
+        <ResizablePanel order={3} defaultSize={isVertical ? 25 : 25} minSize={10} className="bg-gray-50 dark:bg-zinc-900 flex flex-col transition-colors duration-300">
+          <div className="h-10 border-b border-zinc-200 dark:border-zinc-800 flex items-center px-4 gap-2 bg-white dark:bg-zinc-900 shrink-0">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-xs font-bold text-zinc-700 dark:text-zinc-200">AI ASSISTANT</span>
+            <span className="ml-auto text-[10px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">Gemini 2.5</span>
+          </div>
+
+          <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-zinc-900">
+            {/* Chat Output Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+              {/* AI OUTPUT TEXT AREA */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">AI Generated Block Code</label>
+                <textarea
+                  className="w-full h-32 sm:h-64 bg-gray-50 dark:bg-black/40 border border-zinc-200 dark:border-zinc-700 rounded-md p-3 text-xs font-mono text-green-700 dark:text-green-300 focus:border-green-500 focus:outline-none resize-none transition-colors shadow-inner"
+                  value={aiCodePreview}
+                  onChange={(e) => setAiCodePreview(e.target.value)}
+                  placeholder="// AI output will appear here..."
+                />
+                <Button size="sm" className="w-full bg-green-600 hover:bg-green-500 text-white h-8 text-xs font-semibold shadow-sm" disabled={!aiCodePreview} onClick={() => {
+                  const ws = workspaceRef.current;
+                  if (ws && aiCodePreview) {
+                    const block = ws.newBlock('ai2_custom_expression');
+                    block.setFieldValue(aiCodePreview, 'CODE');
+                    block.initSvg(); block.render(); block.moveBy(50, 50);
+                    alert("Block inserted!");
+                  }
+                }}>
+                  Insert as Block
                 </Button>
-                <Button size="sm" variant="outline" onClick={exportWorkspace}>
-                  <Save className="w-4 h-4" /> Export XML
-                </Button>
-                <label className="inline-flex items-center gap-2 text-sm px-3 py-2 border rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
-                  <Upload className="w-4 h-4" /> Import XML
-                  <input
-                    type="file"
-                    accept=".xml"
-                    className="hidden"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) importWorkspace(f);
-                    }}
-                  />
-                </label>
               </div>
             </div>
-            <div className="flex-1 w-full bg-background" ref={blocklyDiv} />
+
+            {/* Input Area */}
+            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 shrink-0">
+              <div className="relative">
+                <textarea
+                  className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 pr-10 text-xs text-zinc-800 dark:text-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none resize-none h-16 sm:h-24 shadow-sm transition-colors"
+                  placeholder="Type instruction (e.g., 'Make a math block')..."
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      setIsGenerating(true);
+                      try {
+                        const res = await fetch("/api/ai-generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: aiPrompt }) });
+                        const d = await res.json();
+                        setAiCodePreview(d.code || d.error);
+                      } catch (e: any) { setAiCodePreview("Error: " + e.message); }
+                      setIsGenerating(false);
+                    }
+                  }}
+                />
+                <Button size="icon" className="absolute bottom-3 right-3 h-7 w-7 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md rounded-md" onClick={async () => {
+                  setIsGenerating(true);
+                  try {
+                    const res = await fetch("/api/ai-generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: aiPrompt }) });
+                    const d = await res.json();
+                    setAiCodePreview(d.code || d.error);
+                  } catch (e: any) { setAiCodePreview("Error: " + e.message); }
+                  setIsGenerating(false);
+                }}>
+                  ➤
+                </Button>
+              </div>
+            </div>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      {error && (
+        <div className="absolute top-16 right-4 z-50 bg-red-500 text-white text-xs px-4 py-2 rounded shadow-xl border border-red-600 animate-in fade-in slide-in-from-top-2">
+          {error} <button className="ml-2 font-bold hover:text-red-100" onClick={() => setError(null)}>✕</button>
+        </div>
+      )}
+
+      {/* HELP DIALOG */}
+      <Dialog open={isHelpOpen} onOpenChange={setIsHelpOpen}>
+        <DialogContent className="max-w-[800px] h-[80vh] flex flex-col bg-zinc-950 border border-zinc-800 text-zinc-100 overflow-hidden">
+          <DialogHeader className="border-b border-zinc-800 pb-4">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <span className="text-2xl">📚</span> Help & Documentation
+            </DialogTitle>
+            <DialogDescription>Everything you need to know to build AI2 Extensions.</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            <section>
+              <h3 className="text-lg font-bold text-indigo-400 mb-2">1. Getting Started</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Welcome to the **Visual Extension Builder**. Use the blocks on the left to create your extension logic.
+                For a complete reference of all available blocks, including Device, Web, and Map utilities, check the full documentation.
+              </p>
+              <div className="mt-4">
+                <Button className="bg-indigo-600 hover:bg-indigo-500 text-white w-full sm:w-auto" onClick={() => window.open('/docs', '_blank')}>
+                  📖 View Full Documentation
+                </Button>
+              </div>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-bold text-emerald-400 mb-2">2. AI Assistant (Gemini)</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                The **AI Assistant** panel on the right allows you to generate code using natural language.
+                <br />
+                - **Generate**: Type "Create a method to reverse a string" and press Enter. The AI will output code.
+                <br />
+                - **Insert**: Click "Insert as Block" to add the generated code as a "Custom Code" block to your workspace.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-bold text-purple-400 mb-2">3. Building .aix</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                When you are ready, click the **Build .aix** button in the top bar.
+                The server will compile your Java code and download the `.aix` file, which you can import directly into MIT App Inventor.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-bold text-zinc-300 mb-2">4. Shortcuts</h3>
+              <ul className="list-disc pl-5 text-sm text-zinc-500 space-y-1">
+                <li>**Ctrl + S**: Export Workspace XML</li>
+                <li>**Ctrl + Enter**: Trigger AI Generation (in prompt box)</li>
+              </ul>
+            </section>
+          </div>
+          <DialogFooter className="border-t border-zinc-800 pt-4">
+            <Button onClick={() => setIsHelpOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
